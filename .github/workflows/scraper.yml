@@ -29,6 +29,8 @@ jobs:
       run: npm start
       env:
         GITHUB_ACTIONS: true
+        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        CHAT_ID: ${{ secrets.CHAT_ID }}
 
     - name: Snimanje novih viđenih oglasa nazad u GitHub bazu (JSON)
       uses: stefanzweifel/git-auto-commit-action@v5
