@@ -1,0 +1,37 @@
+name: Vehicle Monitor Scraper
+
+on:
+  schedule:
+    # Pokreće se svakih 10 minuta (Github limitira suviše česte runove, 10 min je optimalno za besplatne naloge)
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Dozvoljava ručno pokretanje klika na dugme u Github Actions panelu
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+    - name: Čitanje koda
+      uses: actions/checkout@v4
+
+    - name: Instalacija Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Instalacija modula
+      run: npm install
+
+    - name: Pokretanje Scrapera
+      run: npm start
+      env:
+        GITHUB_ACTIONS: true
+
+    - name: Snimanje novih viđenih oglasa nazad u GitHub bazu (JSON)
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "Baza ažurirana: novi oglasi viđeni"
+        file_pattern: seen_ads.json
