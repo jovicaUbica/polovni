@@ -8,7 +8,8 @@ puppeteer.use(StealthPlugin());
 
 // --- CONFIGURATION ---
 const TELEGRAM_TOKEN = '8686474512:AAH163aFtGN4K6mBMmZbddyYjz2EfpRBn5g';
-const CHAT_ID = '6635702095';const TARGET_URL = 'https://www.polovniautomobili.com/auto-oglasi/pretraga?page=1&sort=renewDate_desc';
+const CHAT_ID = '6635702095';
+const TARGET_URL = 'https://www.polovniautomobili.com/auto-oglasi/pretraga?page=1&sort=renewDate_desc&brand=peugeot&model%5B0%5D=308&price_to=8500&year_from=2015&year_to=2018&fuel%5B0%5D=2309&city_distance=0&showOldNew=all&without_price=1';
 const DB_FILE = path.join(process.cwd(), 'seen_ads.json');
 
 // --- INITIALIZE TELEGRAM BOT ---
