@@ -48,54 +48,60 @@ function saveSeenAd(id, seenAds) {
     // Glavna petlja koja vrši pretragu svakih 60 sekundi
     while (true) {
         try {
-            console.log(`\n⏰ [${new Date().toLocaleTimeString()}] Učitavam oglase...`);
+            console.log(`\n⏰ [${new Date().toLocaleTimeString()}] Učitavam oglase u pretrazi...`);
+            let totalNewAds = 0;
             
-            // Otvorimo stranicu
-            await page.goto(TARGET_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
-            
-            // Izvlačimo oglase direktno iz browsera
-            const ads = await page.evaluate(() => {
-                const results = [];
-                // Trazimo i article i div elemente (za svaki slucaj)
-                const items = document.querySelectorAll('article, div.classified');
-                
-                for (let el of items) {
-                    const titleEl = el.querySelector('h2 a, h3 a');
-                    if (!titleEl) continue;
-                    
-                    const href = titleEl.getAttribute('href');
-                    const title = titleEl.innerText.trim() || 'Bez naslova';
-                    
-                    if (href) {
-                        const url = href.startsWith('http') ? href : `https://www.polovniautomobili.com${href}`;
-                        const idMatch = href.match(/\/auto-oglasi\/(\d+)\//);
-                        const id = idMatch ? idMatch[1] : null;
+            // Prolazimo kroz prve 3 stranice oglasa
+            for (let i = 1; i <= 3; i++) {
+                let currentUrl = TARGET_URL;
+                if (currentUrl.includes('page=')) {
+                    currentUrl = currentUrl.replace(/page=\d+/, `page=${i}`);
+                } else {
+                    currentUrl += currentUrl.includes('?') ? `&page=${i}` : `?page=${i}`;
+                }
 
-                        if (id) {
-                            results.push({ id, title, url });
+                console.log(`Otvaram stranicu ${i}...`);
+                await page.goto(currentUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+                
+                // Izvlačimo oglase direktno iz browsera
+                const ads = await page.evaluate(() => {
+                    const results = [];
+                    const items = document.querySelectorAll('article, div.classified');
+                    
+                    for (let el of items) {
+                        const titleEl = el.querySelector('h2 a, h3 a');
+                        if (!titleEl) continue;
+                        
+                        const href = titleEl.getAttribute('href');
+                        const title = titleEl.innerText.trim() || 'Bez naslova';
+                        
+                        if (href) {
+                            const url = href.startsWith('http') ? href : `https://www.polovniautomobili.com${href}`;
+                            const idMatch = href.match(/\/auto-oglasi\/(\d+)\//);
+                            if (idMatch) results.push({ id: idMatch[1], title, url });
                         }
                     }
-                }
-                return results;
-            });
+                    return results;
+                });
 
-            let newAdsCount = 0;
-            for (let ad of ads) {
-                if (!seenAds.has(ad.id)) {
-                    console.log(`>>> [NOVI OGLAS]: ${ad.title}`);
-                    console.log(`    Link: ${ad.url}`);
-                    
-                    saveSeenAd(ad.id, seenAds);
-                    newAdsCount++;
+                for (let ad of ads) {
+                    if (!seenAds.has(ad.id)) {
+                        console.log(`>>> [NOVI OGLAS]: ${ad.title}`);
+                        saveSeenAd(ad.id, seenAds);
+                        totalNewAds++;
 
-                    // 2. Šaljemo obaveštenje na Telegram
-                    const message = `🚨 *Novi Oglas!*\n\n*${ad.title}*\n[Pogledaj na sajtu](${ad.url})`;
-                    bot.sendMessage(CHAT_ID, message, { parse_mode: 'Markdown', disable_web_page_preview: false })
-                      .catch(err => console.log('Greska pri slanju telegram poruke:', err.message));
+                        // Šaljemo obaveštenje na Telegram
+                        const message = `🚨 *Novi Oglas!*\n\n*${ad.title}*\n[Pogledaj na sajtu](${ad.url})`;
+                        bot.sendMessage(CHAT_ID, message, { parse_mode: 'Markdown', disable_web_page_preview: false })
+                          .catch(err => console.log('Greska pri telegramu:', err.message));
+                    }
                 }
+                
+                // Pauza od 2 sekunde izmedju prelistavanja stranica botom (sprecava blokade)
+                await new Promise(r => setTimeout(r, 2000));
             }
 
-            console.log(`Skeniranje uspješno, pronađeno novih na prvoj stranici: ${newAdsCount}`);
+            console.log(`Skeniranje sve 3 stranice uspešno, pronađeno novih: ${totalNewAds}`);
         } catch (error) {
             console.error('Došlo je do greške u petlji:', error.message);
         }
