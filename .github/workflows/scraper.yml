@@ -1,6 +1,9 @@
 name: Vehicle Monitor Scraper
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     # Pokreće se svakih 10 minuta (Github limitira suviše česte runove, 10 min je optimalno za besplatne naloge)
     - cron: '*/10 * * * *'
