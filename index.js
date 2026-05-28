@@ -32,10 +32,14 @@ function saveSeenAd(id, seenAds) {
     let browser;
     try {
         console.log('Pokrećem pretraživač (Puppeteer) da zaobiđem zaštite...');
-        browser = await puppeteer.launch({
+        const launchOptions = {
             headless: 'new', // sakriven prozor
             args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-blink-features=AutomationControlled']
-        });
+        };
+        if (process.env.GITHUB_ACTIONS) {
+            launchOptions.executablePath = '/usr/bin/google-chrome';
+        }
+        browser = await puppeteer.launch(launchOptions);
         
         // Otvaramo jedan tab (page) i koristimo ga stalno (brže i štedi RAM)
         const page = await browser.newPage();

@@ -32,10 +32,14 @@ function saveState(state) {
     let browser;
     try {
         console.log('Pokrećem pretraživač za Xiaomi cenu...');
-        browser = await puppeteer.launch({
+        const launchOptions = {
             headless: 'new',
             args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-blink-features=AutomationControlled']
-        });
+        };
+        if (process.env.GITHUB_ACTIONS) {
+            launchOptions.executablePath = '/usr/bin/google-chrome';
+        }
+        browser = await puppeteer.launch(launchOptions);
         
         const page = await browser.newPage();
         await page.setViewport({ width: 1280, height: 800 });
