@@ -31,15 +31,22 @@ jobs:
     - name: Instalacija Chrome pretraživača
       run: npx puppeteer browsers install chrome
 
-    - name: Pokretanje Scrapera
+    - name: Pokretanje Scrapera Polovni Automobili
       run: npm start
       env:
         GITHUB_ACTIONS: true
         TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
         CHAT_ID: ${{ secrets.CHAT_ID }}
 
-    - name: Snimanje novih viđenih oglasa nazad u GitHub bazu (JSON)
+    - name: Pokretanje Scrapera Xiaomi
+      run: node mi-tracker.js
+      env:
+        GITHUB_ACTIONS: true
+        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        CHAT_ID: ${{ secrets.CHAT_ID }}
+
+    - name: Snimanje novih viđenih oglasa i cena nazad u GitHub bazu (JSON)
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        commit_message: "Baza ažurirana: novi oglasi viđeni"
-        file_pattern: seen_ads.json
+        commit_message: "Baza ažurirana: novi oglasi / cena telefona"
+        file_pattern: "seen_ads.json mi_state.json"
