@@ -29,7 +29,7 @@ jobs:
       run: npm install
 
     - name: Instalacija Chrome pretraživača
-      run: npx puppeteer browsers install chrome
+      run: npx -y puppeteer browsers install chrome
 
     - name: Pokretanje Scrapera Polovni Automobili
       run: npm start
