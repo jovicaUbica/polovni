@@ -29,7 +29,17 @@ jobs:
       run: npm install
 
     - name: Instalacija Chrome pretraživača
-      run: npx -y puppeteer browsers install chrome
+      run: |
+        npx -y puppeteer browsers install chrome > install.log 2>&1 || {
+          echo "=== Chrome Install Failed ==="
+          cat install.log
+          MSG=$(cat install.log | tail -n 15)
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.CHAT_ID }}" \
+            --data-urlencode "text=🚨 GHA Chrome install failed:
+          $MSG"
+          exit 1
+        }
 
     - name: Pokretanje Scrapera Polovni Automobili
       run: npm start
